@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useForm, FormProvider } from "react-hook-form";
 import { Invite } from "../types";
 import Modal from "./Modal";
 import PermissionSwitch from "./PermissionSwitch";
@@ -26,6 +27,8 @@ const InviteTable: React.FC<InviteTableProps> = ({
   const toggleExpanded = (inviteId: string) => {
     setExpandedInvite((prev) => (prev === inviteId ? null : inviteId));
   };
+
+  const formMethods = useForm(); // Initialize form methods
 
   return (
     <div className="overflow-auto">
@@ -85,10 +88,12 @@ const InviteTable: React.FC<InviteTableProps> = ({
                 <tr>
                   <td colSpan={5} className="px-4 py-2">
                     {updateInvitePermissions ? (
-                      <PermissionsSection
-                        invite={invite}
-                        onChange={updateInvitePermissions}
-                      />
+                      <FormProvider {...formMethods}>
+                        <PermissionsSection
+                          invite={invite}
+                          onChange={updateInvitePermissions}
+                        />
+                      </FormProvider>
                     ) : (
                       <div className="italic text-gray-600">
                         Permissions cannot be modified for received invites.
@@ -129,19 +134,18 @@ const PermissionsSection: React.FC<{
   onChange: (inviteId: string, permissions: string[]) => void;
 }> = ({ invite, onChange }) => {
   const permissions = [
-    { id: "read_posts", label: "Read Posts", type: "read" },
-    { id: "write_posts", label: "Write Posts", type: "write" },
-    { id: "read_messages", label: "Read Messages", type: "read" },
-    { id: "write_messages", label: "Write Messages", type: "write" },
-    { id: "read_profile", label: "Read Profile Info", type: "read" },
-    { id: "write_profile", label: "Write Profile Info", type: "write" },
+    { id: "read_posts", label: "Read Posts" },
+    { id: "write_posts", label: "Write Posts" },
+    { id: "read_messages", label: "Read Messages" },
+    { id: "write_messages", label: "Write Messages" },
+    { id: "read_profile", label: "Read Profile Info" },
+    { id: "write_profile", label: "Write Profile Info" },
   ];
 
   const handlePermissionChange = (permissionId: string, enabled: boolean) => {
     let updatedPermissions = [...invite.permissions];
 
     if (enabled) {
-      // Add the permission and any dependent read permission
       updatedPermissions.push(permissionId);
       if (permissionId.startsWith("write")) {
         const readPermission = permissionId.replace("write", "read");
@@ -150,21 +154,18 @@ const PermissionsSection: React.FC<{
         }
       }
     } else {
-      // Remove the permission, and only remove the read permission if manually toggled
       updatedPermissions = updatedPermissions.filter(
         (perm) => perm !== permissionId
       );
       if (permissionId.startsWith("write")) {
         const readPermission = permissionId.replace("write", "read");
-        if (
-          invite.permissions.includes(readPermission) &&
-          !updatedPermissions.includes(readPermission)
-        ) {
-          updatedPermissions.push(readPermission);
+        if (updatedPermissions.includes(readPermission)) {
+          updatedPermissions = updatedPermissions.filter(
+            (perm) => perm !== readPermission
+          );
         }
       }
     }
-
     onChange(invite.id, updatedPermissions);
   };
 
