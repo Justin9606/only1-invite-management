@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { Invite } from "../types";
 import Modal from "./Modal";
 
-interface InviteTableProps {
+type InviteTableProps = {
   invites: Invite[];
   loadMoreInvites: () => void;
   deleteInvite?: (inviteId: string) => void;
   onAcceptInvite?: (inviteId: string) => void;
   onRejectInvite?: (inviteId: string) => void;
-}
+};
 
 const InviteTable: React.FC<InviteTableProps> = ({
   invites,

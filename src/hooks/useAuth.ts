@@ -1,11 +1,11 @@
 import { useState } from "react";
 
-interface UseAuth {
+type UseAuth = {
   isAuthenticated: boolean;
   isVerified: boolean;
   login: () => void;
   logout: () => void;
-}
+};
 
 export const useAuth = (): UseAuth => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -13,7 +13,7 @@ export const useAuth = (): UseAuth => {
 
   const login = () => {
     setIsAuthenticated(true);
-    setIsVerified(true); // Set this to true if the user is verified
+    setIsVerified(true); // set this to true if the user is verified
   };
 
   const logout = () => {

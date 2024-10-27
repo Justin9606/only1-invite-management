@@ -1,12 +1,12 @@
 import React, { useRef } from "react";
 import { FocusScope, useDialog, OverlayContainer, useModal } from "react-aria";
 
-interface ModalProps {
+type ModalProps = {
   title: string;
   children: React.ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
-}
+};
 
 const Modal: React.FC<ModalProps> = ({
   title,

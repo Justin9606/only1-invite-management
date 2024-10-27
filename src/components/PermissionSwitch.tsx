@@ -1,9 +1,9 @@
 import React from "react";
 
-interface Permission {
+type Permission = {
   id: string;
   label: string;
-}
+};
 
 interface PermissionSwitchProps {
   permissions: Permission[];

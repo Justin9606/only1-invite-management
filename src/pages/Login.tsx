@@ -8,14 +8,14 @@ const Login: React.FC = () => {
   const { isAuthenticated, login } = useAuth();
 
   const handleLogin = () => {
-    authService.login(true); // Log in and set the user as verified
-    login(); // Update the auth state in useAuth
-    navigate({ to: "/invites" }); // Redirect to invite management page
+    authService.login(true);
+    login();
+    navigate({ to: "/invites" });
   };
 
   if (isAuthenticated) {
     navigate({ to: "/invites" });
-    return null; // Avoid rendering login page if already authenticated
+    return null;
   }
 
   return (

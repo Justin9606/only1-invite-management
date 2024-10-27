@@ -2,19 +2,19 @@ import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Label, Input, ListBox } from "react-aria-components";
 
-interface Account {
+type Account = {
   id: string;
   name: string;
-}
+};
 
-interface ComboboxProps {
+type ComboboxProps = {
   accounts: Account[];
   onInvite: (account: Account) => void;
-}
+};
 
-interface FormValues {
+type FormValues = {
   accountName: string;
-}
+};
 
 const Combobox: React.FC<ComboboxProps> = ({ accounts, onInvite }) => {
   const { control, handleSubmit, setValue, reset } = useForm<FormValues>({
