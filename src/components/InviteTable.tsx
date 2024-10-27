@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
 import { Invite } from "../types";
 import Modal from "./Modal";
-import PermissionSwitch from "./PermissionSwitch";
 
 interface InviteTableProps {
   invites: Invite[];
   loadMoreInvites: () => void;
-  deleteInvite?: (inviteId: string) => void; // Made optional
-  updateInvitePermissions?: (inviteId: string, permissions: string[]) => void; // Made optional
+  deleteInvite?: (inviteId: string) => void;
   onAcceptInvite?: (inviteId: string) => void;
   onRejectInvite?: (inviteId: string) => void;
 }
@@ -17,18 +14,15 @@ const InviteTable: React.FC<InviteTableProps> = ({
   invites,
   loadMoreInvites,
   deleteInvite,
-  updateInvitePermissions,
   onAcceptInvite,
   onRejectInvite,
 }) => {
   const [expandedInvite, setExpandedInvite] = useState<string | null>(null);
-  const [confirmReject, setConfirmReject] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const toggleExpanded = (inviteId: string) => {
     setExpandedInvite((prev) => (prev === inviteId ? null : inviteId));
   };
-
-  const formMethods = useForm(); // Initialize form methods
 
   return (
     <div className="overflow-auto">
@@ -43,8 +37,9 @@ const InviteTable: React.FC<InviteTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {invites.map((invite: Invite) => (
+          {invites.map((invite) => (
             <React.Fragment key={invite.id}>
+              {/* Collapsed Row */}
               <tr className="border-t">
                 <td className="px-4 py-2">{invite.user}</td>
                 <td className="px-4 py-2">{invite.invitedOn}</td>
@@ -57,7 +52,15 @@ const InviteTable: React.FC<InviteTableProps> = ({
                   >
                     {expandedInvite === invite.id ? "Collapse" : "Expand"}
                   </button>
-                  {onAcceptInvite && onRejectInvite ? (
+                  {deleteInvite && (
+                    <button
+                      className="ml-4 text-red-600 hover:underline"
+                      onClick={() => setConfirmDelete(invite.id)}
+                    >
+                      Delete
+                    </button>
+                  )}
+                  {onAcceptInvite && onRejectInvite && (
                     <>
                       <button
                         className="ml-4 text-green-600 hover:underline"
@@ -67,38 +70,27 @@ const InviteTable: React.FC<InviteTableProps> = ({
                       </button>
                       <button
                         className="ml-4 text-red-600 hover:underline"
-                        onClick={() => setConfirmReject(invite.id)}
+                        onClick={() => onRejectInvite(invite.id)}
                       >
                         Reject
                       </button>
                     </>
-                  ) : (
-                    deleteInvite && (
-                      <button
-                        className="ml-4 text-red-600 hover:underline"
-                        onClick={() => deleteInvite(invite.id)}
-                      >
-                        Delete
-                      </button>
-                    )
                   )}
                 </td>
               </tr>
+
+              {/* Expanded Row for Read-Only Permissions */}
               {expandedInvite === invite.id && (
                 <tr>
                   <td colSpan={5} className="px-4 py-2">
-                    {updateInvitePermissions ? (
-                      <FormProvider {...formMethods}>
-                        <PermissionsSection
-                          invite={invite}
-                          onChange={updateInvitePermissions}
-                        />
-                      </FormProvider>
-                    ) : (
-                      <div className="italic text-gray-600">
-                        Permissions cannot be modified for received invites.
-                      </div>
-                    )}
+                    <div>
+                      <h4 className="font-semibold">Permissions:</h4>
+                      <ul className="list-disc pl-6 text-gray-700">
+                        {invite.permissions.map((perm) => (
+                          <li key={perm}>{perm}</li>
+                        ))}
+                      </ul>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -113,68 +105,20 @@ const InviteTable: React.FC<InviteTableProps> = ({
         Load More
       </button>
 
-      {confirmReject && (
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
         <Modal
-          title="Confirm Rejection"
+          title="Confirm Delete"
           onConfirm={() => {
-            onRejectInvite && onRejectInvite(confirmReject);
-            setConfirmReject(null);
+            deleteInvite?.(confirmDelete);
+            setConfirmDelete(null);
           }}
-          onCancel={() => setConfirmReject(null)}
+          onCancel={() => setConfirmDelete(null)}
         >
-          Are you sure you want to reject this invite?
+          Are you sure you want to delete this invite?
         </Modal>
       )}
     </div>
-  );
-};
-
-const PermissionsSection: React.FC<{
-  invite: Invite;
-  onChange: (inviteId: string, permissions: string[]) => void;
-}> = ({ invite, onChange }) => {
-  const permissions = [
-    { id: "read_posts", label: "Read Posts" },
-    { id: "write_posts", label: "Write Posts" },
-    { id: "read_messages", label: "Read Messages" },
-    { id: "write_messages", label: "Write Messages" },
-    { id: "read_profile", label: "Read Profile Info" },
-    { id: "write_profile", label: "Write Profile Info" },
-  ];
-
-  const handlePermissionChange = (permissionId: string, enabled: boolean) => {
-    let updatedPermissions = [...invite.permissions];
-
-    if (enabled) {
-      updatedPermissions.push(permissionId);
-      if (permissionId.startsWith("write")) {
-        const readPermission = permissionId.replace("write", "read");
-        if (!updatedPermissions.includes(readPermission)) {
-          updatedPermissions.push(readPermission);
-        }
-      }
-    } else {
-      updatedPermissions = updatedPermissions.filter(
-        (perm) => perm !== permissionId
-      );
-      if (permissionId.startsWith("write")) {
-        const readPermission = permissionId.replace("write", "read");
-        if (updatedPermissions.includes(readPermission)) {
-          updatedPermissions = updatedPermissions.filter(
-            (perm) => perm !== readPermission
-          );
-        }
-      }
-    }
-    onChange(invite.id, updatedPermissions);
-  };
-
-  return (
-    <PermissionSwitch
-      permissions={permissions}
-      assignedPermissions={invite.permissions}
-      onPermissionChange={handlePermissionChange}
-    />
   );
 };
 

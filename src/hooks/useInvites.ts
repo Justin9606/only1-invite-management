@@ -6,7 +6,10 @@ interface UseInvites {
   receivedInvites: Invite[];
   loadMoreGivenInvites: () => void;
   loadMoreReceivedInvites: () => void;
-  addInvite: (selectedAccount: { id: string; name: string }) => void;
+  addInvite: (
+    selectedAccount: { id: string; name: string },
+    permissions: string[]
+  ) => void;
   updateInvitePermissions: (inviteId: string, permissions: string[]) => void;
   deleteInvite: (inviteId: string) => void;
   updateInviteStatus: (
@@ -66,13 +69,16 @@ export const useInvites = (): UseInvites => {
     setReceivedInvites((prev) => [...prev, ...moreReceivedInvites]);
   };
 
-  const addInvite = (selectedAccount: { id: string; name: string }) => {
+  const addInvite = (
+    selectedAccount: { id: string; name: string },
+    permissions: string[]
+  ) => {
     const newInvite: Invite = {
       id: (givenInvites.length + 1).toString(),
       user: selectedAccount.name,
       invitedOn: new Date().toLocaleDateString(),
-      permissions: ["read_posts"],
-      permissionsSummary: "Read Posts",
+      permissions,
+      permissionsSummary: permissions.join(", "),
       status: "pending",
     };
 
@@ -139,7 +145,7 @@ export const useInvites = (): UseInvites => {
     loadMoreReceivedInvites,
     addInvite,
     updateInvitePermissions,
+    updateInviteStatus,
     deleteInvite,
-    updateInviteStatus, // Expose updateInviteStatus to handle accept/reject actions
   };
 };

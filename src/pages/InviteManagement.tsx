@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useInvites } from "../hooks/useInvites";
 import InviteTable from "../components/InviteTable";
 import Combobox from "../components/Combobox";
+import PermissionSwitch from "../components/PermissionSwitch";
 
 const InviteManagement: React.FC = () => {
   const {
@@ -10,13 +11,15 @@ const InviteManagement: React.FC = () => {
     loadMoreGivenInvites,
     loadMoreReceivedInvites,
     addInvite,
-    updateInvitePermissions,
-    deleteInvite,
     updateInviteStatus,
+    deleteInvite,
   } = useInvites();
 
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+
   const handleInviteSend = (selectedAccount: { id: string; name: string }) => {
-    addInvite(selectedAccount);
+    addInvite(selectedAccount, selectedPermissions);
+    setSelectedPermissions([]);
   };
 
   const handleAcceptInvite = (inviteId: string) => {
@@ -25,6 +28,32 @@ const InviteManagement: React.FC = () => {
 
   const handleRejectInvite = (inviteId: string) => {
     updateInviteStatus(inviteId, "rejected");
+  };
+
+  const handlePermissionChange = (permissionId: string, enabled: boolean) => {
+    setSelectedPermissions((prev) => {
+      let updatedPermissions = enabled
+        ? [...prev, permissionId]
+        : prev.filter((perm) => perm !== permissionId);
+
+      if (enabled && permissionId.startsWith("write")) {
+        const readPermission = permissionId.replace("write", "read");
+        if (!updatedPermissions.includes(readPermission)) {
+          updatedPermissions.push(readPermission);
+        }
+      } else if (!enabled && permissionId.startsWith("write")) {
+        const readPermission = permissionId.replace("write", "read");
+        const otherWritePermissions = updatedPermissions.filter((perm) =>
+          perm.startsWith("write")
+        );
+        if (!otherWritePermissions.includes(readPermission)) {
+          updatedPermissions = updatedPermissions.filter(
+            (perm) => perm !== readPermission
+          );
+        }
+      }
+      return updatedPermissions;
+    });
   };
 
   return (
@@ -41,6 +70,18 @@ const InviteManagement: React.FC = () => {
           ]}
           onInvite={handleInviteSend}
         />
+        <PermissionSwitch
+          permissions={[
+            { id: "read_posts", label: "Read Posts" },
+            { id: "write_posts", label: "Write Posts" },
+            { id: "read_messages", label: "Read Messages" },
+            { id: "write_messages", label: "Write Messages" },
+            { id: "read_profile", label: "Read Profile Info" },
+            { id: "write_profile", label: "Write Profile Info" },
+          ]}
+          assignedPermissions={selectedPermissions}
+          onPermissionChange={handlePermissionChange}
+        />
       </section>
 
       <section className="space-y-4">
@@ -49,7 +90,6 @@ const InviteManagement: React.FC = () => {
           invites={givenInvites}
           loadMoreInvites={loadMoreGivenInvites}
           deleteInvite={deleteInvite}
-          updateInvitePermissions={updateInvitePermissions}
         />
       </section>
 

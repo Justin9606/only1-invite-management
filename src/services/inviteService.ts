@@ -6,8 +6,15 @@ interface UseInvites {
   receivedInvites: Invite[];
   loadMoreGivenInvites: () => void;
   loadMoreReceivedInvites: () => void;
-  addInvite: (selectedAccount: { id: string; name: string }) => void;
+  addInvite: (
+    selectedAccount: { id: string; name: string },
+    permissions: string[]
+  ) => void;
   updateInvitePermissions: (inviteId: string, permissions: string[]) => void;
+  updateInviteStatus: (
+    inviteId: string,
+    status: "accepted" | "rejected"
+  ) => void;
   deleteInvite: (inviteId: string) => void;
 }
 
@@ -35,7 +42,7 @@ export const useInvites = (): UseInvites => {
   ]);
 
   const loadMoreGivenInvites = () => {
-    const moreInvites: Invite[] = [
+    const moreGivenInvites: Invite[] = [
       {
         id: (givenInvites.length + 1).toString(),
         user: `User ${String.fromCharCode(65 + givenInvites.length)}`,
@@ -45,11 +52,11 @@ export const useInvites = (): UseInvites => {
         status: "pending",
       },
     ];
-    setGivenInvites((prev) => [...prev, ...moreInvites]);
+    setGivenInvites((prev) => [...prev, ...moreGivenInvites]);
   };
 
   const loadMoreReceivedInvites = () => {
-    const moreInvites: Invite[] = [
+    const moreReceivedInvites: Invite[] = [
       {
         id: (receivedInvites.length + 1).toString(),
         user: `User ${String.fromCharCode(65 + receivedInvites.length)}`,
@@ -59,27 +66,29 @@ export const useInvites = (): UseInvites => {
         status: "received",
       },
     ];
-    setReceivedInvites((prev) => [...prev, ...moreInvites]);
+    setReceivedInvites((prev) => [...prev, ...moreReceivedInvites]);
   };
 
-  const addInvite = (selectedAccount: { id: string; name: string }) => {
+  const addInvite = (
+    selectedAccount: { id: string; name: string },
+    permissions: string[]
+  ) => {
     const newInvite: Invite = {
       id: (givenInvites.length + 1).toString(),
       user: selectedAccount.name,
       invitedOn: new Date().toLocaleDateString(),
-      permissions: ["read_posts"],
-      permissionsSummary: "Read Posts",
+      permissions,
+      permissionsSummary: permissions.join(", "),
       status: "pending",
     };
 
-    // Add to givenInvites
     setGivenInvites((prev) => [...prev, newInvite]);
 
-    // Add to receivedInvites as a received invite for the user
     const receivedInvite: Invite = {
       ...newInvite,
       status: "received",
     };
+
     setReceivedInvites((prev) => [...prev, receivedInvite]);
   };
 
@@ -95,16 +104,20 @@ export const useInvites = (): UseInvites => {
           : invite
       )
     );
+  };
 
+  const updateInviteStatus = (
+    inviteId: string,
+    status: "accepted" | "rejected"
+  ) => {
+    setGivenInvites((prev) =>
+      prev.map((invite) =>
+        invite.id === inviteId ? ({ ...invite, status } as Invite) : invite
+      )
+    );
     setReceivedInvites((prev) =>
       prev.map((invite) =>
-        invite.id === inviteId
-          ? {
-              ...invite,
-              permissions,
-              permissionsSummary: permissions.join(", "),
-            }
-          : invite
+        invite.id === inviteId ? ({ ...invite, status } as Invite) : invite
       )
     );
   };
@@ -123,6 +136,7 @@ export const useInvites = (): UseInvites => {
     loadMoreReceivedInvites,
     addInvite,
     updateInvitePermissions,
+    updateInviteStatus,
     deleteInvite,
   };
 };
