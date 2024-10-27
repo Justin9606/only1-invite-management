@@ -13,12 +13,12 @@ interface ComboboxProps {
 }
 
 interface FormValues {
-  account: Account | null;
+  accountName: string;
 }
 
 const Combobox: React.FC<ComboboxProps> = ({ accounts, onInvite }) => {
   const { control, handleSubmit, setValue, reset } = useForm<FormValues>({
-    defaultValues: { account: null },
+    defaultValues: { accountName: "" },
   });
   const [inputValue, setInputValue] = useState("");
   const [filteredAccounts, setFilteredAccounts] = useState(accounts);
@@ -30,29 +30,40 @@ const Combobox: React.FC<ComboboxProps> = ({ accounts, onInvite }) => {
         account.name.toLowerCase().includes(value.toLowerCase())
       )
     );
+    setValue("accountName", value); // Update the form value with free text
   };
 
-  const onSubmit = handleSubmit(({ account }) => {
-    if (account) {
-      onInvite(account);
-      reset();
-      setInputValue("");
-    } else {
-      alert("Please select an account to invite.");
+  const onSubmit = handleSubmit(({ accountName }) => {
+    if (accountName.trim() === "") {
+      alert("Please enter or select an account to invite.");
+      return;
     }
+
+    const selectedAccount = accounts.find(
+      (account) => account.name.toLowerCase() === accountName.toLowerCase()
+    );
+
+    const accountToInvite = selectedAccount || {
+      id: Math.random().toString(),
+      name: accountName,
+    };
+    onInvite(accountToInvite);
+
+    reset();
+    setInputValue("");
   });
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col space-y-4">
       <Controller
-        name="account"
+        name="accountName"
         control={control}
         render={({ field }) => (
           <>
             <Label className="font-semibold">Account:</Label>
             <Input
               className="w-full p-2 border border-gray-300 rounded"
-              placeholder="Search account..."
+              placeholder="Search or enter account..."
               value={inputValue}
               onChange={(e) => handleInputChange(e.target.value)}
             />
@@ -66,9 +77,9 @@ const Combobox: React.FC<ComboboxProps> = ({ accounts, onInvite }) => {
                     (account) => account.id === key
                   );
                   if (selected) {
-                    field.onChange(selected); // Update React Hook Form state
-                    setValue("account", selected); // Set selected account
-                    setInputValue(selected.name);
+                    field.onChange(selected.name); // Update form state
+                    setValue("accountName", selected.name); // Set selected account
+                    setInputValue(selected.name); // Set input value
                   }
                 }}
               >
@@ -77,8 +88,8 @@ const Combobox: React.FC<ComboboxProps> = ({ accounts, onInvite }) => {
                   <div
                     key={account.id}
                     onClick={() => {
-                      field.onChange(account); // Update form state
-                      setValue("account", account); // Set selected account
+                      field.onChange(account.name); // Update form state
+                      setValue("accountName", account.name); // Set selected account
                       setInputValue(account.name); // Set input value
                     }}
                     className="p-2 cursor-pointer hover:bg-gray-100"

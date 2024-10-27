@@ -5,8 +5,10 @@ import Combobox from "../components/Combobox";
 
 const InviteManagement: React.FC = () => {
   const {
-    invites,
-    loadMoreInvites,
+    givenInvites,
+    receivedInvites,
+    loadMoreGivenInvites,
+    loadMoreReceivedInvites,
     addInvite,
     updateInvitePermissions,
     deleteInvite,
@@ -43,8 +45,8 @@ const InviteManagement: React.FC = () => {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Invites Given</h2>
         <InviteTable
-          invites={invites.filter((invite) => invite.status !== "received")}
-          loadMoreInvites={loadMoreInvites}
+          invites={givenInvites}
+          loadMoreInvites={loadMoreGivenInvites}
           deleteInvite={deleteInvite}
           updateInvitePermissions={updateInvitePermissions}
         />
@@ -53,8 +55,8 @@ const InviteManagement: React.FC = () => {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Invites Received</h2>
         <InviteTable
-          invites={invites.filter((invite) => invite.status === "received")}
-          loadMoreInvites={loadMoreInvites}
+          invites={receivedInvites}
+          loadMoreInvites={loadMoreReceivedInvites}
           onAcceptInvite={handleAcceptInvite}
           onRejectInvite={handleRejectInvite}
         />

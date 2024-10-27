@@ -2,15 +2,17 @@ import { useState } from "react";
 import { Invite } from "../types";
 
 interface UseInvites {
-  invites: Invite[];
-  loadMoreInvites: () => void;
+  givenInvites: Invite[];
+  receivedInvites: Invite[];
+  loadMoreGivenInvites: () => void;
+  loadMoreReceivedInvites: () => void;
   addInvite: (selectedAccount: { id: string; name: string }) => void;
   updateInvitePermissions: (inviteId: string, permissions: string[]) => void;
   deleteInvite: (inviteId: string) => void;
 }
 
 export const useInvites = (): UseInvites => {
-  const [invites, setInvites] = useState<Invite[]>([
+  const [givenInvites, setGivenInvites] = useState<Invite[]>([
     {
       id: "1",
       user: "User A",
@@ -21,34 +23,68 @@ export const useInvites = (): UseInvites => {
     },
   ]);
 
-  const loadMoreInvites = () => {
-    const moreInvites: Invite[] = [
+  const [receivedInvites, setReceivedInvites] = useState<Invite[]>([
+    {
+      id: "2",
+      user: "User B",
+      invitedOn: new Date().toLocaleDateString(),
+      permissions: ["read_messages"],
+      permissionsSummary: "Read Messages",
+      status: "received",
+    },
+  ]);
+
+  const loadMoreGivenInvites = () => {
+    const moreGivenInvites: Invite[] = [
       {
-        id: (invites.length + 1).toString(),
-        user: `User ${String.fromCharCode(65 + invites.length)}`,
+        id: (givenInvites.length + 1).toString(),
+        user: `User ${String.fromCharCode(65 + givenInvites.length)}`,
         invitedOn: new Date().toLocaleDateString(),
         permissions: ["read_posts"],
         permissionsSummary: "Read Posts",
         status: "pending",
       },
     ];
-    setInvites((prev) => [...prev, ...moreInvites]);
+    setGivenInvites((prev) => [...prev, ...moreGivenInvites]);
+  };
+
+  const loadMoreReceivedInvites = () => {
+    const moreReceivedInvites: Invite[] = [
+      {
+        id: (receivedInvites.length + 1).toString(),
+        user: `User ${String.fromCharCode(65 + receivedInvites.length)}`,
+        invitedOn: new Date().toLocaleDateString(),
+        permissions: ["read_messages"],
+        permissionsSummary: "Read Messages",
+        status: "received",
+      },
+    ];
+    setReceivedInvites((prev) => [...prev, ...moreReceivedInvites]);
   };
 
   const addInvite = (selectedAccount: { id: string; name: string }) => {
     const newInvite: Invite = {
-      id: (invites.length + 1).toString(),
+      id: (givenInvites.length + receivedInvites.length + 1).toString(),
       user: selectedAccount.name,
       invitedOn: new Date().toLocaleDateString(),
       permissions: ["read_posts"],
       permissionsSummary: "Read Posts",
       status: "pending",
     };
-    setInvites((prev) => [...prev, newInvite]);
+
+    setGivenInvites((prev) => [...prev, newInvite]);
+
+    // Add to received invites if the selected account is a unique external user
+    if (selectedAccount.name.includes("@")) {
+      setReceivedInvites((prev) => [
+        ...prev,
+        { ...newInvite, status: "received" },
+      ]);
+    }
   };
 
   const updateInvitePermissions = (inviteId: string, permissions: string[]) => {
-    setInvites((prev) =>
+    setGivenInvites((prev) =>
       prev.map((invite) =>
         invite.id === inviteId
           ? {
@@ -62,12 +98,17 @@ export const useInvites = (): UseInvites => {
   };
 
   const deleteInvite = (inviteId: string) => {
-    setInvites((prev) => prev.filter((invite) => invite.id !== inviteId));
+    setGivenInvites((prev) => prev.filter((invite) => invite.id !== inviteId));
+    setReceivedInvites((prev) =>
+      prev.filter((invite) => invite.id !== inviteId)
+    );
   };
 
   return {
-    invites,
-    loadMoreInvites,
+    givenInvites,
+    receivedInvites,
+    loadMoreGivenInvites,
+    loadMoreReceivedInvites,
     addInvite,
     updateInvitePermissions,
     deleteInvite,

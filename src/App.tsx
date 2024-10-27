@@ -20,22 +20,22 @@ const rootRoute = createRootRoute({
   ),
 });
 
-// Define the index route for InviteManagement
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/",
-  component: InviteManagement,
-});
-
-// Define the login route (if you still want to keep it for future use)
+// Define the login route as the initial route
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/login",
+  path: "/",
   component: Login,
 });
 
+// Define the InviteManagement route
+const inviteManagementRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/invites",
+  component: InviteManagement,
+});
+
 // Create the route tree with the defined routes
-const routeTree = rootRoute.addChildren([indexRoute, loginRoute]);
+const routeTree = rootRoute.addChildren([loginRoute, inviteManagementRoute]);
 
 // Create the router with the route tree
 const router = createRouter({ routeTree });
