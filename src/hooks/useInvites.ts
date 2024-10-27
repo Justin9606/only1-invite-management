@@ -64,7 +64,7 @@ export const useInvites = (): UseInvites => {
 
   const addInvite = (selectedAccount: { id: string; name: string }) => {
     const newInvite: Invite = {
-      id: (givenInvites.length + receivedInvites.length + 1).toString(),
+      id: (givenInvites.length + 1).toString(),
       user: selectedAccount.name,
       invitedOn: new Date().toLocaleDateString(),
       permissions: ["read_posts"],
@@ -72,15 +72,16 @@ export const useInvites = (): UseInvites => {
       status: "pending",
     };
 
+    // Add to givenInvites
     setGivenInvites((prev) => [...prev, newInvite]);
 
-    // Add to received invites if the selected account is a unique external user
-    if (selectedAccount.name.includes("@")) {
-      setReceivedInvites((prev) => [
-        ...prev,
-        { ...newInvite, status: "received" },
-      ]);
-    }
+    // Add to receivedInvites as a received invite for the user
+    const receivedInvite: Invite = {
+      ...newInvite,
+      status: "received",
+    };
+
+    setReceivedInvites((prev) => [...prev, receivedInvite]);
   };
 
   const updateInvitePermissions = (inviteId: string, permissions: string[]) => {
