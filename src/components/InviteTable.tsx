@@ -141,6 +141,7 @@ const PermissionsSection: React.FC<{
     let updatedPermissions = [...invite.permissions];
 
     if (enabled) {
+      // Add the permission and any dependent read permission
       updatedPermissions.push(permissionId);
       if (permissionId.startsWith("write")) {
         const readPermission = permissionId.replace("write", "read");
@@ -149,18 +150,21 @@ const PermissionsSection: React.FC<{
         }
       }
     } else {
+      // Remove the permission, and only remove the read permission if manually toggled
       updatedPermissions = updatedPermissions.filter(
         (perm) => perm !== permissionId
       );
       if (permissionId.startsWith("write")) {
         const readPermission = permissionId.replace("write", "read");
-        if (updatedPermissions.includes(readPermission)) {
-          updatedPermissions = updatedPermissions.filter(
-            (perm) => perm !== readPermission
-          );
+        if (
+          invite.permissions.includes(readPermission) &&
+          !updatedPermissions.includes(readPermission)
+        ) {
+          updatedPermissions.push(readPermission);
         }
       }
     }
+
     onChange(invite.id, updatedPermissions);
   };
 

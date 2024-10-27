@@ -9,6 +9,10 @@ interface UseInvites {
   addInvite: (selectedAccount: { id: string; name: string }) => void;
   updateInvitePermissions: (inviteId: string, permissions: string[]) => void;
   deleteInvite: (inviteId: string) => void;
+  updateInviteStatus: (
+    inviteId: string,
+    status: "accepted" | "rejected"
+  ) => void;
 }
 
 export const useInvites = (): UseInvites => {
@@ -98,6 +102,29 @@ export const useInvites = (): UseInvites => {
     );
   };
 
+  const updateInviteStatus = (
+    inviteId: string,
+    status: "accepted" | "rejected"
+  ) => {
+    // Update status in receivedInvites
+    setReceivedInvites((prev) =>
+      prev.map((invite) =>
+        invite.id === inviteId
+          ? ({ ...invite, status } as Invite) // Cast to Invite
+          : invite
+      )
+    );
+
+    // Update status in givenInvites to reflect the change
+    setGivenInvites((prev) =>
+      prev.map((invite) =>
+        invite.id === inviteId
+          ? ({ ...invite, status } as Invite) // Cast to Invite
+          : invite
+      )
+    );
+  };
+
   const deleteInvite = (inviteId: string) => {
     setGivenInvites((prev) => prev.filter((invite) => invite.id !== inviteId));
     setReceivedInvites((prev) =>
@@ -113,5 +140,6 @@ export const useInvites = (): UseInvites => {
     addInvite,
     updateInvitePermissions,
     deleteInvite,
+    updateInviteStatus, // Expose updateInviteStatus to handle accept/reject actions
   };
 };

@@ -12,6 +12,7 @@ const InviteManagement: React.FC = () => {
     addInvite,
     updateInvitePermissions,
     deleteInvite,
+    updateInviteStatus,
   } = useInvites();
 
   const handleInviteSend = (selectedAccount: { id: string; name: string }) => {
@@ -19,11 +20,11 @@ const InviteManagement: React.FC = () => {
   };
 
   const handleAcceptInvite = (inviteId: string) => {
-    updateInvitePermissions(inviteId, ["accepted"]);
+    updateInviteStatus(inviteId, "accepted");
   };
 
   const handleRejectInvite = (inviteId: string) => {
-    deleteInvite(inviteId);
+    updateInviteStatus(inviteId, "rejected");
   };
 
   return (
