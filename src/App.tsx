@@ -1,4 +1,3 @@
-// src/App.tsx
 import React from "react";
 import { OverlayProvider } from "react-aria";
 import { QueryClientProvider } from "@tanstack/react-query";
