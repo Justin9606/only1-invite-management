@@ -1,24 +1,33 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { authService } from "../services/authService";
 
 type UseAuth = {
   isAuthenticated: boolean;
   isVerified: boolean;
-  login: () => void;
+  login: (verified?: boolean) => void;
   logout: () => void;
 };
 
 export const useAuth = (): UseAuth => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    authService.isAuthenticated()
+  );
+  const [isVerified, setIsVerified] = useState(authService.isVerified());
+  const navigate = useNavigate();
 
-  const login = () => {
+  const login = (verified: boolean = true) => {
+    authService.login(verified);
     setIsAuthenticated(true);
-    setIsVerified(true); // set this to true if the user is verified
+    setIsVerified(verified);
+    navigate({ to: "/invites" });
   };
 
   const logout = () => {
+    authService.logout();
     setIsAuthenticated(false);
     setIsVerified(false);
+    navigate({ to: "/" });
   };
 
   return {
