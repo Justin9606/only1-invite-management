@@ -1,0 +1,66 @@
+import React from "react";
+import { useInvites } from "../hooks/useInvites";
+import InviteTable from "../components/InviteTable";
+import Combobox from "../components/Combobox";
+
+const InviteManagement: React.FC = () => {
+  const {
+    invites,
+    loadMoreInvites,
+    addInvite,
+    updateInvitePermissions,
+    deleteInvite,
+  } = useInvites();
+
+  const handleInviteSend = (selectedAccount: { id: string; name: string }) => {
+    addInvite(selectedAccount);
+  };
+
+  const handleAcceptInvite = (inviteId: string) => {
+    updateInvitePermissions(inviteId, ["accepted"]);
+  };
+
+  const handleRejectInvite = (inviteId: string) => {
+    deleteInvite(inviteId);
+  };
+
+  return (
+    <div className="p-6 space-y-8">
+      <h1 className="text-2xl font-semibold mb-4">Manage Invites</h1>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Invite a New User</h2>
+        <Combobox
+          accounts={[
+            { id: "1", name: "User A" },
+            { id: "2", name: "User B" },
+            { id: "3", name: "User C" },
+          ]}
+          onInvite={handleInviteSend}
+        />
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Invites Given</h2>
+        <InviteTable
+          invites={invites.filter((invite) => invite.status !== "received")}
+          loadMoreInvites={loadMoreInvites}
+          deleteInvite={deleteInvite}
+          updateInvitePermissions={updateInvitePermissions}
+        />
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Invites Received</h2>
+        <InviteTable
+          invites={invites.filter((invite) => invite.status === "received")}
+          loadMoreInvites={loadMoreInvites}
+          onAcceptInvite={handleAcceptInvite}
+          onRejectInvite={handleRejectInvite}
+        />
+      </section>
+    </div>
+  );
+};
+
+export default InviteManagement;
